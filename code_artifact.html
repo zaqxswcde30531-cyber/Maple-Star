@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>楓星 - 組隊任務硬幣價值換算</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Pixel/Gaming aesthetic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#111318',
+                        cardBg: '#181b22',
+                        hoverBg: '#212530',
+                        borderDark: '#2a2f3d',
+                        goldAccent: '#f5c542',
+                        goldHover: '#e0b233',
+                        greenValue: '#4ade80',
+                    },
+                    fontFamily: {
+                        gaming: ['"Chakra Petch"', '"Noto Sans TC"', 'sans-serif'],
+                        pixel: ['"Press Start 2P"', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #111318;
+            color: #e2e8f0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        
+        .maple-title {
+            color: #ffd700;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.4), 2px 2px 0px #8b6508;
+            letter-spacing: 1px;
+        }
+
+        /* Hide HTML5 number input spin buttons for clean UI */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .table-input {
+            background: transparent;
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+            color: #f1f5f9;
+        }
+
+        .table-input:hover {
+            border-color: #3b4252;
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .table-input:focus {
+            outline: none;
+            border-color: #f5c542;
+            background-color: rgba(245, 197, 66, 0.05);
+            box-shadow: 0 0 0 1px rgba(245, 197, 66, 0.3);
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111318;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2f3d;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b4252;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-6 lg:p-10 flex flex-col justify-between">
+
+    <div class="max-w-6xl mx-auto w-full">
+        <!-- Header -->
+        <header class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-borderDark/60 pb-5">
+            <div>
+                <h1 class="text-3xl sm:text-4xl font-bold maple-title font-gaming flex items-center gap-2">
+                    <span>楓星</span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 font-normal">組隊任務專用</span>
+                </h1>
+                <h2 class="text-slate-300 text-sm sm:text-base font-medium mt-1">組隊任務硬幣價值換算</h2>
+                <p class="text-slate-500 text-xs sm:text-sm mt-2 flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-amber-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0 1 18 0z"></path></svg>
+                    可直接點擊儲存格輸入；「硬幣價值」會自動計算。
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-3">
+                <button onclick="addNewRow()" class="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-lg shadow-lg shadow-amber-500/10 transition flex items-center gap-1.5 text-sm active:scale-95">
+                    <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
+                    新增商品
+                </button>
+                <button onclick="resetDefaultData()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-lg border border-slate-700 transition text-sm active:scale-95">
+                    恢復預設
+                </button>
+                <button onclick="clearAllRows()" class="px-3 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-medium rounded-lg border border-red-500/20 transition text-sm active:scale-95">
+                    清除全部
+                </button>
+            </div>
+        </header>
+
+        <!-- Table Container -->
+        <main class="bg-cardBg rounded-xl border border-borderDark shadow-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[700px]">
+                    <thead>
+                        <tr class="border-b border-borderDark bg-slate-900/60 text-slate-400 text-xs sm:text-sm font-semibold select-none">
+                            <th class="py-3.5 px-4 w-12 text-center">#</th>
+                            <th class="py-3.5 px-4">產品名稱</th>
+                            <th class="py-3.5 px-4 text-right w-40 cursor-pointer hover:text-amber-400 transition" onclick="sortTable('coins')">
+                                所需硬幣數量 <span id="sort-coins-icon" class="text-xs opacity-50">↕</span>
+                            </th>
+                            <th class="py-3.5 px-4 text-right w-48 cursor-pointer hover:text-amber-400 transition" onclick="sortTable('price')">
+                                當日售價 <span id="sort-price-icon" class="text-xs opacity-50">↕</span>
+                            </th>
+                            <th class="py-3.5 px-4 text-right w-48 cursor-pointer hover:text-amber-400 transition bg-amber-500/5" onclick="sortTable('value')">
+                                硬幣價值 <span id="sort-value-icon" class="text-xs text-amber-400">↓</span>
+                            </th>
+                            <th class="py-3.5 px-3 w-12 text-center"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-table-body" class="divide-y divide-borderDark/60 text-sm">
+                        <!-- Dynamic Rows loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer summary stats -->
+            <div class="p-4 border-t border-borderDark bg-slate-900/30 text-xs text-slate-400 flex flex-wrap justify-between items-center gap-2">
+                <span id="total-count">商品總數：0 項</span>
+                <span id="best-item" class="text-amber-400 font-medium">最佳 CP 值商品：-</span>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer Copyright -->
+    <footer class="mt-8 text-center text-xs text-slate-600">
+        楓星 - 組隊任務硬幣價值換算工具 &copy; <span id="year"></span> | 自動儲存資料至本機瀏覽器
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Initial default dataset matching MapleStory group quest items
+        const defaultItems = [
+            { id: 1, name: '潛能力賦予卷軸', coins: 12, price: 465000 },
+            { id: 2, name: '高級潛能力賦予卷軸', coins: 35, price: 2040000 },
+            { id: 3, name: '特殊潛能力賦予卷軸', coins: 80, price: 29700000 },
+            { id: 4, name: '黃金鐵鎚', coins: 25, price: 12800000 },
+            { id: 5, name: '黃金鐵鎚50%', coins: 10, price: 1350000 },
+            { id: 6, name: '附加潛能力賦予卷軸 60%', coins: 25, price: 12500000 },
+            { id: 7, name: '附加潛能力賦予卷軸 80%', coins: 45, price: 21000000 },
+            { id: 8, name: '特殊附加潛能力賦予卷軸', coins: 200, price: 89800000 },
+        ];
+
+        let products = [];
+        let sortDirection = { column: null, asc: false };
+
+        // Load data from LocalStorage or initialize with default
+        function loadData() {
+            const saved = localStorage.getItem('maple_star_coin_data');
+            if (saved) {
+                try {
+                    products = JSON.parse(saved);
+                } catch (e) {
+                    products = [...defaultItems];
+                }
+            } else {
+                products = JSON.parse(JSON.stringify(defaultItems));
+            }
+            renderTable();
+        }
+
+        // Save current products state to LocalStorage
+        function saveData() {
+            localStorage.setItem('maple_star_coin_data', JSON.stringify(products));
+            updateSummary();
+        }
+
+        // Format numbers with comma separator and optional decimals
+        function formatNumber(num, isValue = false) {
+            if (num === null || num === undefined || isNaN(num) || num === 0) return '-';
+            
+            if (isValue) {
+                // Check if integer or needs decimals
+                if (Number.isInteger(num)) {
+                    return new Intl.NumberFormat('zh-TW').format(num);
+                } else {
+                    return new Intl.NumberFormat('zh-TW', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+                }
+            }
+            return new Intl.NumberFormat('zh-TW').format(num);
+        }
+
+        // Render entire table from state
+        function renderTable() {
+            const tbody = document.getElementById('product-table-body');
+            tbody.innerHTML = '';
+
+            products.forEach((product, index) => {
+                const coinVal = (product.coins && product.coins > 0 && product.price) 
+                    ? (product.price / product.coins) 
+                    : 0;
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-hoverBg/70 transition-colors group';
+                
+                tr.innerHTML = `
+                    <td class="py-2.5 px-4 text-center font-mono text-slate-500 text-xs">${index + 1}</td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" 
+                            value="${escapeHtml(product.name)}" 
+                            placeholder="輸入商品名稱"
+                            onchange="updateItem(${index}, 'name', this.value)"
+                            class="table-input font-medium placeholder-slate-600">
+                    </td>
+                    <td class="py-2.5 px-2 text-right">
+                        <input type="number" 
+                            value="${product.coins || ''}" 
+                            placeholder="0"
+                            min="0"
+                            oninput="updateItem(${index}, 'coins', parseFloat(this.value) || 0)"
+                            class="table-input font-mono text-right text-slate-200">
+                    </td>
+                    <td class="py-2.5 px-2 text-right">
+                        <input type="number" 
+                            value="${product.price || ''}" 
+                            placeholder="0"
+                            min="0"
+                            oninput="updateItem(${index}, 'price', parseFloat(this.value) || 0)"
+                            class="table-input font-mono text-right text-slate-200">
+                    </td>
+                    <td class="py-2.5 px-4 text-right font-mono font-bold text-greenValue text-base bg-amber-500/[0.02]">
+                        ${coinVal > 0 ? formatNumber(coinVal, true) : '<span class="text-slate-600 font-normal">-</span>'}
+                    </td>
+                    <td class="py-2.5 px-2 text-center">
+                        <button onclick="deleteRow(${index})" title="刪除商品" class="text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition p-1 rounded hover:bg-red-500/10">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            updateSummary();
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function updateItem(index, key, value) {
+            products[index][key] = value;
+            saveData();
+            
+            // If coins or price changed, re-render to update coin value calculation
+            if (key === 'coins' || key === 'price') {
+                renderTable();
+            }
+        }
+
+        function addNewRow() {
+            products.push({
+                id: Date.now(),
+                name: '新商品',
+                coins: 0,
+                price: 0
+            });
+            saveData();
+            renderTable();
+
+            // Focus on newly created row's name field
+            setTimeout(() => {
+                const inputs = document.querySelectorAll('tbody tr:last-child input');
+                if (inputs.length > 0) inputs[0].focus();
+            }, 50);
+        }
+
+        function deleteRow(index) {
+            products.splice(index, 1);
+            saveData();
+            renderTable();
+        }
+
+        function clearAllRows() {
+            if (confirm('確定要清除所有商品欄目嗎？')) {
+                products = [];
+                saveData();
+                renderTable();
+            }
+        }
+
+        function resetDefaultData() {
+            if (confirm('確定要恢復為預設商品列表嗎？')) {
+                products = JSON.parse(JSON.stringify(defaultItems));
+                saveData();
+                renderTable();
+            }
+        }
+
+        // Sort table columns
+        function sortTable(type) {
+            if (sortDirection.column === type) {
+                sortDirection.asc = !sortDirection.asc;
+            } else {
+                sortDirection.column = type;
+                sortDirection.asc = false; // default high to low for values
+            }
+
+            products.sort((a, b) => {
+                let valA, valB;
+
+                if (type === 'coins') {
+                    valA = a.coins || 0;
+                    valB = b.coins || 0;
+                } else if (type === 'price') {
+                    valA = a.price || 0;
+                    valB = b.price || 0;
+                } else if (type === 'value') {
+                    valA = (a.coins && a.price) ? (a.price / a.coins) : 0;
+                    valB = (b.coins && b.price) ? (b.price / b.coins) : 0;
+                }
+
+                if (sortDirection.asc) {
+                    return valA - valB;
+                } else {
+                    return valB - valA;
+                }
+            });
+
+            // Update sort icon visual state
+            ['coins', 'price', 'value'].forEach(col => {
+                const icon = document.getElementById(`sort-${col}-icon`);
+                if (icon) {
+                    if (col === type) {
+                        icon.textContent = sortDirection.asc ? '↑' : '↓';
+                        icon.className = 'text-xs text-amber-400 font-bold';
+                    } else {
+                        icon.textContent = '↕';
+                        icon.className = 'text-xs opacity-40';
+                    }
+                }
+            });
+
+            renderTable();
+        }
+
+        // Update footer summary stats
+        function updateSummary() {
+            document.getElementById('total-count').textContent = `商品總數：${products.length} 項`;
+
+            let bestProduct = null;
+            let highestValue = 0;
+
+            products.forEach(p => {
+                if (p.coins && p.coins > 0 && p.price) {
+                    const val = p.price / p.coins;
+                    if (val > highestValue) {
+                        highestValue = val;
+                        bestProduct = p;
+                    }
+                }
+            });
+
+            const bestEl = document.getElementById('best-item');
+            if (bestProduct && highestValue > 0) {
+                bestEl.innerHTML = `最佳 CP 值商品：<span class="font-bold text-amber-300">${escapeHtml(bestProduct.name)}</span> (硬幣價值: <span class="font-mono text-greenValue font-bold">${formatNumber(highestValue, true)}</span>)`;
+            } else {
+                bestEl.textContent = '最佳 CP 值商品：-';
+            }
+        }
+
+        // Initialize App on load
+        window.onload = function() {
+            loadData();
+        };
+    </script>
+</body>
+</html>
